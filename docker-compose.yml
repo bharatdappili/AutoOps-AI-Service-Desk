@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: omniroute-postgres
+    environment:
+      POSTGRES_USER: omniroute
+      POSTGRES_PASSWORD: omniroute_password
+      POSTGRES_DB: omniroute
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U omniroute"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - omniroute-net
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: omniroute-jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    environment:
+      - JENKINS_OPTS=--prefix=/jenkins
+    volumes:
+      - jenkins_data:/var/jenkins_home
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - omniroute-net
+
+  mock-identity:
+    build:
+      context: ./mock_identity
+      dockerfile: Dockerfile
+    container_name: omniroute-mock-identity
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+    volumes:
+      - ./mock_identity:/app
+    networks:
+      - omniroute-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  workflow-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.workflow
+    container_name: omniroute-workflow-runner
+    environment:
+      - PG_HOST=postgres
+      - PG_PORT=5432
+      - PG_USER=omniroute
+      - PG_PASSWORD=omniroute_password
+      - PG_DB=omniroute
+      - JENKINS_BASE_URL=http://jenkins:8080
+      - JENKINS_USER=admin
+      - JENKINS_PASSWORD=admin
+    depends_on:
+      postgres:
+        condition: service_healthy
+      jenkins:
+        condition: service_healthy
+    networks:
+      - omniroute-net
+    volumes:
+      - .:/app
+
+networks:
+  omniroute-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  jenkins_data:

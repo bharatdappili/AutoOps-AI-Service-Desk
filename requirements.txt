@@ -1,0 +1,26 @@
+# AutoOps AI Service Desk - Python Dependencies
+
+# Core dependencies
+requests>=2.31.0          # HTTP client for Jenkins
+docker>=6.1.1             # Docker container management
+psycopg2-binary>=2.9.9    # PostgreSQL adapter (for Docker demo)
+sqlalchemy>=2.0.23        # ORM (future use)
+
+# FastAPI (for Mock Identity Service)
+fastapi>=0.104.1
+uvicorn>=0.24.0
+pydantic>=2.5.0
+
+# Web Framework (optional, for future UI)
+streamlit>=1.28.0
+# streamlit-authenticator>=0.3.2
+
+# Data processing
+pydantic[email]>=2.5.0
+python-dateutil>=2.8.2
+
+# Logging and monitoring
+python-json-logger>=2.0.7
+
+# Utilities
+colorama>=0.4.6           # Cross-platform coloring for terminal

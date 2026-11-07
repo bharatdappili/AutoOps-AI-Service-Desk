@@ -1,0 +1,416 @@
+This can actually be a very strong hackathon project if you design it like a real enterprise platform and not just a collection of agents.
+Project Name
+AutoOps AI Service Desk
+A Switch-powered autonomous IT operations platform where specialized agents collaborate to:
+Handle access requests.
+Handle incidents.
+Perform approvals.
+Execute remediation.
+Validate outcomes.
+Generate audit trails and RCA reports.
+Real Enterprise Flow
+Think of it as:
+Plain Text
+┌──────────────┐
+│ User/Employee│
+└──────┬───────┘
+│
+▼
+ 
+┌───────────────────┐
+│ Switch Room │
+│ AutoOps │
+└─────────┬─────────┘
+│
+ 
+┌─────────────────┼─────────────────┐
+│ │ │
+▼ ▼ ▼
+ 
+Ticket Agents Access Agents Incident Agents
+ 
+│ │ │
+ 
+▼ ▼ ▼
+ 
+PostgreSQL Mock Azure AD Jenkins Container
+ 
+│ │ │
+ 
+└─────────────────┴─────────────────┘
+│
+ 
+▼
+ 
+RCA Reports
+Systems
+You need only 3 backend systems.
+PostgreSQL
+Stores:
+Plain Text
+Users
+Managers
+Groups
+Tickets
+Approvals
+Incidents
+Audit Logs
+Jenkins Container
+Real Jenkins.
+Used for:
+Plain Text
+Jobs
+Build history
+Build failures
+Logs
+Mock Identity Service
+FastAPI.
+Simulates:
+Plain Text
+Azure AD
+LDAP
+RBAC
+Group Membership
+No need for real Azure AD.
+Master Ticket
+Every workflow begins from a JSON payload.
+Example:
+JSON
+{
+"ticket_id": "INC-1001",
+"type": "incident",
+"priority": "P1",
+"requested_by": "bharat",
+"service": "jenkins",
+"title": "Jenkins inaccessible",
+"description": "Users unable to reach Jenkins UI. Receiving 502."
+}
+or
+JSON
+{
+"ticket_id": "REQ-1002",
+"type": "access_request",
+"requested_by": "bharat",
+"resource": "jenkins_admin",
+"reason": "Production deployment support"
+}
+AGENT ARCHITECTURE
+I would create 9 agents.
+Not too many.
+Not too few.
+Looks realistic.
+Agent 1
+Service Desk Agent
+Entry point.
+Responsibilities:
+Plain Text
+Reads ticket
+Validates payload
+Classifies ticket
+Determines workflow
+Determines severity
+Input:
+JSON
+INC-1001
+Output:
+Plain Text
+Category: Incident
+Priority: P1
+ 
+Routing to Incident Commander.
+Agent 2
+Workflow Orchestrator Agent
+Brain of the system.
+Responsibilities:
+Plain Text
+Identify next steps.
+Assign work.
+Track agent status.
+Track approvals.
+This agent decides:
+Plain Text
+Who works next?
+Who needs approval?
+Can ticket close?
+ACCESS MANAGEMENT PATH
+Agent 3
+Access Governance Agent
+Checks:
+Plain Text
+Who requested?
+What permission?
+Need approval?
+Risk level?
+Example:
+Plain Text
+Jenkins_Admin group
+ 
+Critical Access
+ 
+Manager approval required
+Agent 4
+Approval Agent
+Responsibilities:
+Plain Text
+Locate manager
+Request approval
+Wait response
+Example:
+Plain Text
+@Manager
+ 
+Approve Jenkins_Admin
+for Bharat?
+Manager:
+Plain Text
+Approved
+Agent:
+Plain Text
+Approval recorded.
+Agent 5
+Identity Operations Agent
+This is the ONLY privileged agent.
+Permissions:
+Plain Text
+Add Group
+Remove Group
+Create User
+Disable User
+Example:
+SQL
+INSERT INTO user_groups
+Result:
+Plain Text
+Bharat added to Jenkins_Admin
+Agent 6
+Validation Agent
+Verifies:
+Plain Text
+Permission exists.
+Database updated.
+Audit trail created.
+Example:
+Plain Text
+Access granted successfully.
+INCIDENT PATH
+Agent 7
+Incident Commander Agent
+P1/P2 tickets.
+Responsibilities:
+Plain Text
+Open war room
+Coordinate investigation
+Invite other agents
+Example:
+Plain Text
+SEV-1 created.
+ 
+Diagnostics requested.
+Agent 8
+Diagnostics Agent
+My favorite part.
+Permissions:
+Plain Text
+Read Jenkins
+Read Logs
+Read Metrics
+Read DB
+Can execute:
+Shell
+docker logs jenkins
+or
+Shell
+curl Jenkins API
+Outputs:
+Plain Text
+OutOfMemoryError
+ 
+500 errors detected
+Agent 9
+Root Cause & Remediation Agent
+Analyzes:
+Plain Text
+Logs
+Changes
+Deployments
+Metrics
+Example:
+Plain Text
+Root Cause:
+ 
+Plugin upgrade increased JVM usage.
+ 
+Recommendation:
+ 
+Rollback plugin.
+Agent 10 (Optional)
+Auto Execution Agent
+Only for approved actions.
+Example:
+Plain Text
+Restart Jenkins
+Rollback Plugin
+Clear Cache
+Executes:
+Shell
+docker restart jenkins
+or
+Shell
+java -jar jenkins-cli.jar
+Agent 11
+RCA Agent
+Final report generation.
+Produces:
+Plain Text
+Timeline
+Impact
+Root Cause
+Resolution
+Prevention
+Example:
+Markdown
+Incident INC-1001
+ 
+Duration:
+14 mins
+ 
+Root Cause:
+Plugin upgrade
+ 
+Resolution:
+Rollback
+ 
+Prevention:
+Canary deployment
+Complete Access Flow
+Plain Text
+Ticket Generated
+│
+▼
+ 
+Service Desk Agent
+│
+▼
+ 
+Workflow Orchestrator
+│
+▼
+ 
+Access Governance
+│
+▼
+ 
+Approval Agent
+│
+▼
+ 
+Identity Operations
+│
+▼
+ 
+Validation Agent
+│
+▼
+ 
+Ticket Closed
+Complete Incident Flow
+Plain Text
+Ticket Generated
+│
+▼
+ 
+Service Desk Agent
+│
+▼
+ 
+Workflow Orchestrator
+│
+▼
+ 
+Incident Commander
+│
+▼
+ 
+Diagnostics Agent
+│
+▼
+ 
+Root Cause Agent
+│
+▼
+ 
+Approval Agent
+│
+▼
+ 
+Auto Execution Agent
+│
+▼
+ 
+Validation Agent
+│
+▼
+ 
+RCA Agent
+│
+▼
+ 
+Ticket Closed
+What To Actually Demo
+Demo 1 (Access Request)
+Plain Text
+Need Jenkins Admin Access
+Show:
+Approval
+Identity change
+Validation
+Closure
+Time:
+1 minute
+Demo 2 (P1 Incident)
+Create an intentional failure.
+Example:
+Shell
+docker stop postgres
+Jenkins fails.
+Create incident:
+Plain Text
+P1 Jenkins Down
+Agents:
+Plain Text
+Detect issue
+Analyze logs
+Identify database failure
+Request approval
+Restart database
+Validate Jenkins
+Generate RCA
+Time:
+3-4 minutes
+Why this can win
+Most teams will show:
+Plain Text
+PR
+→ Review
+→ Code Fix
+→ Merge
+You've already noticed that from the examples.
+Your project shows:
+Plain Text
+Enterprise Service Desk
++
+Identity Governance
++
+Incident Management
++
+Approvals
++
+Privilege Separation
++
+Automatic RCA
+The strongest differentiator is permission-scoped agents:
+Approval Agent cannot modify systems.
+Diagnostics Agent cannot grant access.
+Identity Agent cannot restart Jenkins.
+Execution Agent cannot approve changes.
+That separation of duties makes it feel like a real ITSM platform rather than a collection of chatbots, and that's exactly the kind of architecture that stands out in a Switch-based hackathon.

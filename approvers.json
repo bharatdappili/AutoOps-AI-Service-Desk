@@ -1,0 +1,15 @@
+{
+  "_instructions": [
+    "Maps the platform-authenticated sender name (the name Switch reports as the sender of a message, e.g. the Mattermost username) to the Postgres user who may approve access.",
+    "A sender with no mapping, a null db_username, or a mapped user whose role is not manager/admin can never approve. There is no default approver.",
+    "Fill this in deliberately: the mapping is the authorization policy, and changing it changes who can grant access."
+  ],
+  "approvers": {
+    "Admin": {
+      "db_username": null
+    },
+    "user": {
+      "db_username": "manager_bharat"
+    }
+  }
+}
